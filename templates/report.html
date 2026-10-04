@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}تقرير فحص {{ scan.target_url }} | WebScan AI{% endblock %}
+
+{% block content %}
+
+<section class="report-header">
+  <div>
+    <h1>تقرير فحص الأمان</h1>
+    <p class="target-url">{{ scan.target_url }}</p>
+    <p class="scan-date-full">تم الفحص في {{ scan.created_at | ar_datetime }}، استغرق {{ scan.duration_ms }} مللي ثانية</p>
+  </div>
+  <div class="score-badge grade-{{ scan.grade[0] }}">
+    <div class="score-number">{{ scan.score }}</div>
+    <div class="score-label">من 100</div>
+    <div class="score-grade">{{ scan.grade }}</div>
+  </div>
+</section>
+
+<div class="report-actions">
+  <a href="{{ url_for('report_pdf', scan_id=scan.id) }}" class="btn-secondary"><i class="fa-solid fa-download" aria-hidden="true"></i> تحميل تقرير PDF</a>
+  <a href="{{ url_for('index') }}" class="btn-secondary"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> فحص جديد</a>
+</div>
+
+<section class="severity-summary">
+  {% for sev, count in severity_summary.items() %}
+    <div class="sev-pill sev-{{ sev }}">
+      <span class="sev-count">{{ count }}</span>
+      <span class="sev-name">
+        {% if sev == 'critical' %}حرجة
+        {% elif sev == 'high' %}عالية
+        {% elif sev == 'medium' %}متوسطة
+        {% elif sev == 'low' %}منخفضة
+        {% else %}معلومة{% endif %}
+      </span>
+    </div>
+  {% endfor %}
+</section>
+
+{% if summary %}
+<section class="ai-summary">
+  <h2><i class="fa-solid fa-robot" aria-hidden="true"></i> الملخص الذكي</h2>
+  <p>{{ summary.headline_ar }}</p>
+  {% if summary.ai_text %}
+    <p class="ai-generated-tag">توصية مولّدة بواسطة نموذج ذكاء اصطناعي متصل</p>
+    <p>{{ summary.ai_text }}</p>
+  {% endif %}
+  {% if summary.action_plan_ar %}
+    <h3>خطة العمل المقترحة</h3>
+    <ol class="action-plan">
+      {% for item in summary.action_plan_ar %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="meta-grid">
+  <div class="meta-card">
+    <span class="meta-label">HTTPS</span>
+    <span class="meta-value">
+      {% if meta.used_https %}نعم <i class="fa-solid fa-circle-check" aria-hidden="true"></i>{% else %}لا <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>{% endif %}
+    </span>
+  </div>
+  <div class="meta-card">
+    <span class="meta-label">رمز الاستجابة</span>
+    <span class="meta-value">{{ meta.status_code }}</span>
+  </div>
+  <div class="meta-card">
+    <span class="meta-label">زمن الاستجابة</span>
+    <span class="meta-value">{{ meta.response_time_ms }} ms</span>
+  </div>
+  {% if meta.ssl and meta.ssl.days_until_expiry is defined %}
+  <div class="meta-card">
+    <span class="meta-label">أيام تبقى لانتهاء الشهادة</span>
+    <span class="meta-value">{{ meta.ssl.days_until_expiry }}</span>
+  </div>
+  {% endif %}
+  {% if meta.technologies and meta.technologies.detected %}
+  <div class="meta-card meta-card-wide">
+    <span class="meta-label">التقنيات المكتشفة</span>
+    <span class="meta-value">{{ meta.technologies.detected | join('، ') }}</span>
+  </div>
+  {% endif %}
+</section>
+
+<section class="findings-section">
+  <h2>الملاحظات التفصيلية ({{ findings|length }})</h2>
+
+  {% if not findings %}
+    <p class="no-findings"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> لم يتم العثور على مشاكل أمان واضحة في هذا الفحص.</p>
+  {% endif %}
+
+  <div class="findings-list">
+    {% for f in findings %}
+    <details class="finding-card sev-border-{{ f.severity }}">
+      <summary>
+        <span class="finding-severity sev-{{ f.severity }}">{{ f.severity_label_ar }}</span>
+        <span class="finding-title">{{ f.title_ar }}</span>
+      </summary>
+      <div class="finding-body">
+        <p>{{ f.description_ar }}</p>
+        {% if f.evidence %}
+          <p class="finding-evidence"><strong>الدليل:</strong> <code>{{ f.evidence }}</code></p>
+        {% endif %}
+        {% if f.recommendation_ar %}
+          <p class="finding-recommendation"><strong>التوصية:</strong> {{ f.recommendation_ar }}</p>
+        {% endif %}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

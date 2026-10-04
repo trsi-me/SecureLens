@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}سجل الفحوصات | WebScan AI{% endblock %}
+
+{% block content %}
+<h1>سجل الفحوصات</h1>
+
+{% if not scans %}
+  <p>لا يوجد أي فحص بعد. <a href="{{ url_for('index') }}">ابدأ فحصاً جديداً</a>.</p>
+{% else %}
+<div class="history-table-wrap">
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>الموقع</th>
+        <th>الدرجة</th>
+        <th>النتيجة</th>
+        <th>تاريخ الفحص</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in scans %}
+      <tr>
+        <td>{{ s.target_url }}</td>
+        <td><span class="grade-pill grade-{{ s.grade[0] }}">{{ s.grade }}</span></td>
+        <td>{{ s.score }}/100</td>
+        <td>{{ s.created_at | ar_datetime }}</td>
+        <td><a href="{{ url_for('report', scan_id=s.id) }}" class="btn-link">عرض التقرير</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

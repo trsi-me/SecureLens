@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+  <h1>افحص أمان موقعك خلال ثوانٍ</h1>
+  <p class="hero-sub">
+    أداة ذكية تحلل رؤوس الأمان، شهادة SSL، الكوكيز، الملفات المكشوفة،
+    واحتمالية ثغرات XSS، وتقدّم لك تحذيرات وتوصيات عملية قبل أن يستغلها أحد.
+  </p>
+
+  <form action="{{ url_for('scan') }}" method="POST" class="scan-form" id="scanForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="scan-input-row">
+      <input
+        type="text"
+        name="url"
+        id="urlInput"
+        placeholder="example.com أو https://example.com"
+        required
+        autocomplete="off"
+      >
+      <button type="submit" id="scanBtn">
+        <span class="btn-text">ابدأ الفحص</span>
+        <span class="btn-spinner" hidden></span>
+      </button>
+    </div>
+
+    <label class="confirm-row">
+      <input type="checkbox" name="confirm_ownership" required>
+      أؤكد أنني مالك هذا الموقع أو أملك تصريحاً رسمياً بفحصه.
+    </label>
+
+    {% if error %}
+      <p class="form-error">{{ error }}</p>
+    {% endif %}
+  </form>
+
+  <div class="disclaimer">
+    <strong>تنبيه:</strong> هذه الأداة تجري فحصاً سلبياً غير هجومي (لا تحاول اختراق الموقع فعلياً).
+    استخدمها فقط على مواقع تملكها أو لديك إذن كتابي بفحصها. الفحص غير المصرح به لمواقع الغير قد يكون مخالفاً للأنظمة.
+  </div>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <div class="feature-icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></div>
+    <h3>رؤوس الأمان و SSL</h3>
+    <p>تحقق من HSTS و CSP و X-Frame-Options وصلاحية شهادة SSL وإصدار TLS.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><i class="fa-solid fa-cookie-bite" aria-hidden="true"></i></div>
+    <h3>أمان الكوكيز</h3>
+    <p>كشف الكوكيز التي تفتقد خصائص Secure و HttpOnly و SameSite.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></div>
+    <h3>ملفات مكشوفة</h3>
+    <p>اكتشاف ملفات .env، .git، النسخ الاحتياطية، وسرد محتويات المجلدات.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon"><i class="fa-solid fa-robot" aria-hidden="true"></i></div>
+    <h3>توصيات ذكية</h3>
+    <p>ملخص تنفيذي وخطة عمل مرتبة حسب الأولوية لإصلاح كل مشكلة.</p>
+  </div>
+</section>
+
+{% if recent_scans %}
+<section class="recent-scans">
+  <h2>آخر الفحوصات</h2>
+  <div class="scan-list">
+    {% for s in recent_scans %}
+    <a href="{{ url_for('report', scan_id=s.id) }}" class="scan-list-item">
+      <span class="scan-url">{{ s.target_url }}</span>
+      <span class="scan-grade grade-{{ s.grade[0] }}">{{ s.grade }}</span>
+      <span class="scan-score">{{ s.score }}/100</span>
+      <span class="scan-date">{{ s.created_at | ar_datetime }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.getElementById('scanForm').addEventListener('submit', function () {
+    const btn = document.getElementById('scanBtn');
+    btn.querySelector('.btn-text').textContent = 'جارٍ الفحص...';
+    btn.querySelector('.btn-spinner').hidden = false;
+    btn.disabled = true;
+  });
+</script>
+{% endblock %}

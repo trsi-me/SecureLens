@@ -1,0 +1,27 @@
+# نموذج إعداد OpenVPN لتأمين وصول المسؤولين عن بعد لخادم SecureLens.
+# لا علاقة له بفحص المواقع، الهدف حماية قناة الإدارة (SSH/لوحة الخادم) خلف VPN بدل تعريضها مباشرة للإنترنت.
+# ولّد الشهادات بـ easy-rsa قبل الاستخدام، ثم انسخ الملف إلى /etc/openvpn/server/securelens.conf
+
+port 1194
+proto udp
+dev tun
+
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+
+server 10.8.0.0 255.255.255.0
+push "redirect-gateway def1 bypass-dhcp"
+push "route 10.8.0.0 255.255.255.0"
+
+keepalive 10 120
+cipher AES-256-GCM
+auth SHA256
+tls-server
+persist-key
+persist-tun
+
+status /var/log/openvpn/securelens-status.log
+log-append /var/log/openvpn/securelens.log
+verb 3

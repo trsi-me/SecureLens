@@ -1,0 +1,21 @@
+# وحدة systemd لتشغيل SecureLens تلقائياً عبر Gunicorn على Ubuntu/CentOS.
+# انسخ الملف إلى /etc/systemd/system/securelens.service ثم:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now securelens
+
+[Unit]
+Description=SecureLens (Flask web security scanner)
+After=network.target
+
+[Service]
+Type=simple
+User=securelens
+Group=securelens
+WorkingDirectory=/opt/securelens
+EnvironmentFile=/opt/securelens/.env
+ExecStart=/opt/securelens/.venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 deploy.wsgi:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

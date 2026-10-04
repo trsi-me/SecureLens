@@ -1,0 +1,14 @@
+# قواعد Snort دفاعية اختيارية لحماية خادم SecureLens نفسه بعد نشره.
+# انسخ هذا الملف إلى /etc/snort/rules/securelens.rules وأضف بملف snort.conf:
+#   include $RULE_PATH/securelens.rules
+# هذه القواعد لا تفحص أي طرف خارجي، بل تراقب حركة المرور الواردة لخادم SecureLens نفسه.
+
+alert tcp any any -> $HOME_NET 443 (msg:"SecureLens: SQL injection attempt in request"; content:"UNION SELECT"; nocase; sid:1000001; rev:1;)
+
+alert tcp any any -> $HOME_NET 443 (msg:"SecureLens: possible XSS payload in request"; content:"<script"; nocase; sid:1000002; rev:1;)
+
+alert tcp any any -> $HOME_NET 443 (msg:"SecureLens: directory traversal attempt"; content:"../../"; sid:1000003; rev:1;)
+
+alert tcp any any -> $HOME_NET 443 (msg:"SecureLens: attempt to access .env file"; content:"GET /.env"; nocase; sid:1000004; rev:1;)
+
+alert tcp any any -> $HOME_NET 443 (msg:"SecureLens: excessive requests from single source (possible scan/DoS)"; threshold: type threshold, track by_src, count 100, seconds 10; sid:1000005; rev:1;)

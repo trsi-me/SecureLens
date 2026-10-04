@@ -1,0 +1,8 @@
+# تثبيت اختياري: فقط إذا غيّرت DATABASE_URL بملف .env لاستخدام MySQL أو PostgreSQL
+# بدل SQLite الافتراضية. ثبّت السطر المناسب لقاعدة بياناتك فقط.
+
+# لقاعدة بيانات PostgreSQL (مثال: DATABASE_URL=postgresql://user:pass@host:5432/securelens)
+psycopg2-binary==2.9.9
+
+# لقاعدة بيانات MySQL (مثال: DATABASE_URL=mysql+pymysql://user:pass@host:3306/securelens)
+PyMySQL==1.1.1
